@@ -10,10 +10,16 @@ import (
 	"github.com/tyler-lutz/pokedexcli/internal/pokeapi"
 )
 
+type config struct {
+	pokeapiClient           pokeapi.Client
+	nextLocationAreaURL     *string
+	previousLocationAreaURL *string
+}
+
 type cliCommand struct {
 	name        string
 	description string
-	callback    func() error
+	callback    func(cfg *config) error
 }
 
 func getCommands() map[string]cliCommand {
@@ -36,7 +42,7 @@ func getCommands() map[string]cliCommand {
 	}
 }
 
-func commandHelp() error {
+func commandHelp(cfg *config) error {
 	fmt.Println("Welcome to the pokedex!")
 	fmt.Println("Usage:")
 	for _, command := range getCommands() {
@@ -45,15 +51,15 @@ func commandHelp() error {
 	return nil
 }
 
-func commandExit() error {
+func commandExit(cfg *config) error {
 	os.Exit(0)
 	return nil
 }
 
-func commandMap() error {
+func commandMap(cfg *config) error {
 	pokeapiClient := pokeapi.NewClient()
 
-	res, err := pokeapiClient.ListLocationAreas()
+	res, err := pokeapiClient.ListLocationAreas(cfg.nextLocationAreaURL)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -61,6 +67,8 @@ func commandMap() error {
 	for _, area := range res.Results {
 		fmt.Printf("- %s\n", area.Name)
 	}
+	cfg.nextLocationAreaURL = res.Next
+	cfg.previousLocationAreaURL = res.Previous
 	return nil
 }
 
@@ -70,6 +78,10 @@ func parseInput(input string) []string {
 }
 
 func main() {
+	cfg := config{
+		pokeapiClient: pokeapi.NewClient(),
+	}
+
 	scanner := bufio.NewScanner(os.Stdin)
 	for {
 		fmt.Print("pokedex> ")
@@ -81,7 +93,7 @@ func main() {
 		parsedInput := parseInput(input)
 		userCommand := parsedInput[0]
 		if command, ok := getCommands()[userCommand]; ok {
-			err := command.callback()
+			err := command.callback(&cfg)
 			if err != nil {
 				fmt.Println(err)
 			}

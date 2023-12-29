@@ -33,8 +33,13 @@ type LocationAreasResponse struct {
 	} `json:"results"`
 }
 
-func (c Client) ListLocationAreas() (LocationAreasResponse, error) {
+func (c Client) ListLocationAreas(pageURL *string) (LocationAreasResponse, error) {
 	url := baseURL + "/location-area"
+
+	if pageURL != nil {
+		url = *pageURL
+	}
+
 	res, err := c.httpClient.Get(url)
 	if err != nil {
 		return LocationAreasResponse{}, err
