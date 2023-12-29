@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/tyler-lutz/pokedexcli/internal/pokeapi"
 )
@@ -53,7 +54,7 @@ func parseInput(input string) []string {
 
 func main() {
 	cfg := config{
-		pokeapiClient: pokeapi.NewClient(),
+		pokeapiClient: pokeapi.NewClient(time.Minute * 5),
 	}
 
 	scanner := bufio.NewScanner(os.Stdin)
