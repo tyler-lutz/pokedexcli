@@ -51,13 +51,15 @@ func commandExit() error {
 }
 
 func commandMap() error {
-	res, err := pokeapi.ListLocationAreas()
+	pokeapiClient := pokeapi.NewClient()
+
+	res, err := pokeapiClient.ListLocationAreas()
 	if err != nil {
 		log.Fatal(err)
 	}
 	fmt.Println("Location areas:")
 	for _, area := range res.Results {
-		fmt.Printf("  %s\n", area.Name)
+		fmt.Printf("- %s\n", area.Name)
 	}
 	return nil
 }

@@ -5,9 +5,22 @@ import (
 	"errors"
 	"io"
 	"net/http"
+	"time"
 )
 
 const baseURL string = "https://pokeapi.co/api/v2"
+
+type Client struct {
+	httpClient http.Client
+}
+
+func NewClient() Client {
+	return Client{
+		httpClient: http.Client{
+			Timeout: time.Minute,
+		},
+	}
+}
 
 // LocationArea is a location area in the pokemon world.
 type LocationAreasResponse struct {
@@ -20,9 +33,9 @@ type LocationAreasResponse struct {
 	} `json:"results"`
 }
 
-func ListLocationAreas() (LocationAreasResponse, error) {
+func (c Client) ListLocationAreas() (LocationAreasResponse, error) {
 	url := baseURL + "/location-area"
-	res, err := http.Get(url)
+	res, err := c.httpClient.Get(url)
 	if err != nil {
 		return LocationAreasResponse{}, err
 	}
