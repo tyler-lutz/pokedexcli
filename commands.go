@@ -1,12 +1,13 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"os"
 )
 
-func commandHelp(cfg *config) error {
+func commandHelp(cfg *config, args ...string) error {
 	fmt.Println("Welcome to the pokedex!")
 	fmt.Println("Usage:")
 	for _, command := range getCommands() {
@@ -15,12 +16,12 @@ func commandHelp(cfg *config) error {
 	return nil
 }
 
-func commandExit(cfg *config) error {
+func commandExit(cfg *config, args ...string) error {
 	os.Exit(0)
 	return nil
 }
 
-func commandMap(cfg *config) error {
+func commandMap(cfg *config, args ...string) error {
 	res, err := cfg.pokeapiClient.ListLocationAreas(cfg.nextLocationAreaURL)
 	if err != nil {
 		log.Fatal(err)
@@ -34,7 +35,7 @@ func commandMap(cfg *config) error {
 	return nil
 }
 
-func commandMapB(cfg *config) error {
+func commandMapB(cfg *config, args ...string) error {
 	if cfg.previousLocationAreaURL == nil {
 		fmt.Println("No previous location areas.")
 		return nil
@@ -49,5 +50,24 @@ func commandMapB(cfg *config) error {
 	}
 	cfg.nextLocationAreaURL = res.Next
 	cfg.previousLocationAreaURL = res.Previous
+	return nil
+}
+
+func commandExplore(cfg *config, args ...string) error {
+	if len(args) != 1 {
+		fmt.Println(args)
+		return errors.New("no location area provided")
+	}
+
+	name := args[0]
+	res, err := cfg.pokeapiClient.GetLocation(name)
+	if err != nil {
+		return err
+	}
+	fmt.Println("Exploring " + res.Name + "...")
+	fmt.Println("Found Pokemon:")
+	for _, encounter := range res.PokemonEncounters {
+		fmt.Printf("- %s\n", encounter.Pokemon.Name)
+	}
 	return nil
 }
