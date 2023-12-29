@@ -43,7 +43,8 @@ func commandExit() error {
 }
 
 func parseInput(input string) []string {
-	return strings.Fields(input)
+	lowered := strings.ToLower(input)
+	return strings.Fields(lowered)
 }
 
 func main() {
