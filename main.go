@@ -3,8 +3,11 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"log"
 	"os"
 	"strings"
+
+	"github.com/tyler-lutz/pokedexcli/internal/pokeapi"
 )
 
 type cliCommand struct {
@@ -25,6 +28,11 @@ func getCommands() map[string]cliCommand {
 			description: "Exit the pokedex",
 			callback:    commandExit,
 		},
+		"map": {
+			name:        "map",
+			description: "Displays the names of 20 location areas in the pokemon world.",
+			callback:    commandMap,
+		},
 	}
 }
 
@@ -39,6 +47,18 @@ func commandHelp() error {
 
 func commandExit() error {
 	os.Exit(0)
+	return nil
+}
+
+func commandMap() error {
+	res, err := pokeapi.ListLocationAreas()
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println("Location areas:")
+	for _, area := range res.Results {
+		fmt.Printf("  %s\n", area.Name)
+	}
 	return nil
 }
 
