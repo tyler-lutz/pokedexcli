@@ -39,6 +39,11 @@ func getCommands() map[string]cliCommand {
 			description: "Displays the names of 20 location areas in the pokemon world.",
 			callback:    commandMap,
 		},
+		"mapb": {
+			name:        "mapb",
+			description: "Displays the previous 20 location areas in the pokemon world.",
+			callback:    commandMapB,
+		},
 	}
 }
 
@@ -57,9 +62,25 @@ func commandExit(cfg *config) error {
 }
 
 func commandMap(cfg *config) error {
-	pokeapiClient := pokeapi.NewClient()
+	res, err := cfg.pokeapiClient.ListLocationAreas(cfg.nextLocationAreaURL)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println("Location areas:")
+	for _, area := range res.Results {
+		fmt.Printf("- %s\n", area.Name)
+	}
+	cfg.nextLocationAreaURL = res.Next
+	cfg.previousLocationAreaURL = res.Previous
+	return nil
+}
 
-	res, err := pokeapiClient.ListLocationAreas(cfg.nextLocationAreaURL)
+func commandMapB(cfg *config) error {
+	if cfg.previousLocationAreaURL == nil {
+		fmt.Println("No previous location areas.")
+		return nil
+	}
+	res, err := cfg.pokeapiClient.ListLocationAreas(cfg.previousLocationAreaURL)
 	if err != nil {
 		log.Fatal(err)
 	}
